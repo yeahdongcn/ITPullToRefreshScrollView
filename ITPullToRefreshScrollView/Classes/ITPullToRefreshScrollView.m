@@ -168,6 +168,11 @@ static CGFloat const kScrollerKnobVerticalSpacing = 2.0f;
         if ([self.delegate respondsToSelector:@selector(pullToRefreshView:didReachRefreshingEdge:)]) {
             [self.delegate pullToRefreshView:self didReachRefreshingEdge:ITPullToRefreshEdgeBottom];
         }
+        return;
+    }
+    
+    if ([self.delegate respondsToSelector:@selector(pullToRefreshView:didReachRefreshingEdge:)]) {
+        [self.delegate pullToRefreshView:self didReachRefreshingEdge:ITPullToRefreshEdgeNone];
     }
 }
 
