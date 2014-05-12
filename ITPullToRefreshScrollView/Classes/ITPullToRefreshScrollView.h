@@ -49,6 +49,15 @@ typedef NS_ENUM(NSUInteger, ITPullToRefreshEdge) {
 - (void)pullToRefreshView:(ITPullToRefreshScrollView *)scrollView
     didStopRefreshingEdge:(ITPullToRefreshEdge)edge;
 
+/**
+ *  This method get's invoked when the scroll view reached the top&bottom edge
+ *
+ *  @param scrollView - The scroll view that stopped refreshing
+ *  @param edge       - The edge that reached
+ */
+- (void)pullToRefreshView:(ITPullToRefreshScrollView *)scrollView
+   didReachRefreshingEdge:(ITPullToRefreshEdge)edge;
+
 @end
 
 

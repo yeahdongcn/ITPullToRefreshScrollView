@@ -149,6 +149,28 @@ void dispatch_sync_on_main(dispatch_block_t block) {
     }];
 }
 
+static CGFloat const kScrollerKnobVerticalSpacing = 2.0f;
+
+- (void)scrollingWithEvent:(NSEvent *)theEvent {
+    if (_isLocked) return;
+
+    CGFloat top = [self.verticalScroller rectForPart:NSScrollerKnob].origin.y - kScrollerKnobVerticalSpacing;
+    if (top == 0 && [theEvent deltaY] > 0) {
+        if ([self.delegate respondsToSelector:@selector(pullToRefreshView:didReachRefreshingEdge:)]) {
+            [self.delegate pullToRefreshView:self didReachRefreshingEdge:ITPullToRefreshEdgeTop];
+        }
+        return;
+    }
+    
+    CGFloat bottom = [self.verticalScroller rectForPart:NSScrollerKnob].origin.y + [self.verticalScroller rectForPart:NSScrollerKnob].size.height + kScrollerKnobVerticalSpacing;
+    if (bottom == [self.verticalScroller rectForPart:NSScrollerKnobSlot].size.height
+        && [theEvent deltaY] < 0) {
+        if ([self.delegate respondsToSelector:@selector(pullToRefreshView:didReachRefreshingEdge:)]) {
+            [self.delegate pullToRefreshView:self didReachRefreshingEdge:ITPullToRefreshEdgeBottom];
+        }
+    }
+}
+
 - (void)scrollWheel:(NSEvent *)theEvent {
     if (_isLocked) return;
     
@@ -156,8 +178,10 @@ void dispatch_sync_on_main(dispatch_block_t block) {
     
     if (eventPhase & NSEventPhaseChanged) {
         [self scrollingChangedWithEvent:theEvent];
-    } else if(eventPhase & NSEventPhaseEnded) {
+    } else if (eventPhase & NSEventPhaseEnded) {
         [self scrollingEndedWithEvent:theEvent];
+    } else if (eventPhase == NSEventPhaseNone) {
+        [self scrollingWithEvent:theEvent];
     }
         
     [super scrollWheel:theEvent];
