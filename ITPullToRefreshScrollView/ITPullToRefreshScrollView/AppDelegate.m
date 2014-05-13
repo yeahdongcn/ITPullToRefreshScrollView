@@ -71,4 +71,9 @@
     [self.tableView endUpdates];
 }
 
+- (void)pullToRefreshView:(ITPullToRefreshScrollView *)scrollView didReachRefreshingEdge:(ITPullToRefreshEdge)edge
+{
+    NSLog(@"%d", (int)edge);
+}
+
 @end
