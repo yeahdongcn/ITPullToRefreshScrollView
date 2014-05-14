@@ -27,11 +27,8 @@
 
 - (void)__buttonClicked:(NSButton *)button
 {
-    if (button == self.refreshButton) {
-        [self pullToRefreshView:self.scrollView didStartRefreshingEdge:ITPullToRefreshEdgeTop];
-    } else if (button == self.moreButton) {
-        [self pullToRefreshView:self.scrollView didStartRefreshingEdge:ITPullToRefreshEdgeBottom];
-    }
+    [self pullToRefreshView:self.scrollView didStartRefreshingEdge:button == self.refreshButton ? ITPullToRefreshEdgeTop : ITPullToRefreshEdgeBottom];
+    [button == self.refreshButton ? self.refreshPopover : self.morePopover close];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
