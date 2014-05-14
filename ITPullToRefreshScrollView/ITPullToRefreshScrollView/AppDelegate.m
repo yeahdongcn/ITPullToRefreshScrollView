@@ -10,28 +10,50 @@
 #import "ITPullToRefreshScrollView.h"
 
 
-@interface AppDelegate () {
-    NSMutableArray *data;
-}
+@interface AppDelegate ()
+
+@property (nonatomic, strong) NSMutableArray *data;
+
+@property (assign) IBOutlet NSPopover *refreshPopover;
+@property (assign) IBOutlet NSButton  *refreshButton;
+
+@property (assign) IBOutlet NSPopover *morePopover;
+@property (assign) IBOutlet NSButton *moreButton;
+
 @end
 
 
 @implementation AppDelegate
 
+- (void)__buttonClicked:(NSButton *)button
+{
+    if (button == self.refreshButton) {
+        [self pullToRefreshView:self.scrollView didStartRefreshingEdge:ITPullToRefreshEdgeTop];
+    } else if (button == self.moreButton) {
+        [self pullToRefreshView:self.scrollView didStartRefreshingEdge:ITPullToRefreshEdgeBottom];
+    }
+}
+
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    data = [@[  ] mutableCopy];
+    self.data = [@[  ] mutableCopy];
     self.scrollView.refreshableEdges = ITPullToRefreshEdgeTop | ITPullToRefreshEdgeBottom;
     [self.tableView reloadData];
+    
+    [self.refreshButton setTarget:self];
+    [self.refreshButton setAction:@selector(__buttonClicked:)];
+    
+    [self.moreButton setTarget:self];
+    [self.moreButton setAction:@selector(__buttonClicked:)];
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView {
-    return data.count;
+    return self.data.count;
 }
 
 - (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row {
     NSTableCellView *cellView = [tableView makeViewWithIdentifier:@"default" owner:self];
-    cellView.textField.stringValue = data[row];
+    cellView.textField.stringValue = self.data[row];
     
     return cellView;
 }
@@ -42,11 +64,11 @@
     dispatch_after(popTime, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^(void){
         dispatch_sync(dispatch_get_main_queue(), ^{
             if (edge & ITPullToRefreshEdgeTop) {
-                [data insertObject:@"Test 1" atIndex:0];
-                [data insertObject:@"Test 2" atIndex:0];
+                [self.data insertObject:@"Test 1" atIndex:0];
+                [self.data insertObject:@"Test 2" atIndex:0];
             } else if (edge & ITPullToRefreshEdgeBottom) {
                 for (int i = 0; i < 50; i++) {
-                    [data addObject:[NSString stringWithFormat:@"Test %d", i]];
+                    [self.data addObject:[NSString stringWithFormat:@"Test %d", i]];
                 }
             }
             
@@ -61,8 +83,8 @@
     if (edge & ITPullToRefreshEdgeTop) {
         range = NSMakeRange(0, 2);
     }
-    else if (edge & ITPullToRefreshEdgeBottom) range = NSMakeRange(data.count - 50, 50);
-        
+    else if (edge & ITPullToRefreshEdgeBottom) range = NSMakeRange(self.data.count - 50, 50);
+    
     [self.tableView beginUpdates];
     {
         [self.tableView insertRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:range]
@@ -73,7 +95,32 @@
 
 - (void)pullToRefreshView:(ITPullToRefreshScrollView *)scrollView didReachRefreshingEdge:(ITPullToRefreshEdge)edge
 {
-    NSLog(@"%d", (int)edge);
+    switch (edge) {
+        case ITPullToRefreshEdgeNone:
+            if (self.refreshPopover.isShown) {
+                [self.refreshPopover close];
+            }
+            if (self.morePopover.isShown) {
+                [self.morePopover close];
+            }
+            break;
+        case ITPullToRefreshEdgeTop:
+            if (!self.refreshPopover.isShown) {
+                [self.refreshPopover showRelativeToRect:CGRectMake(self.tableView.bounds.size.width - 2, 0, 2, 2)
+                                                 ofView:self.tableView
+                                          preferredEdge:NSMaxYEdge];
+            }
+            break;
+        case ITPullToRefreshEdgeBottom:
+            if (!self.morePopover.isShown) {
+                [self.morePopover showRelativeToRect:CGRectMake(self.tableView.bounds.size.width - 2, self.tableView.bounds.size.height - 2, 2, 2)
+                                              ofView:self.tableView
+                                       preferredEdge:NSMaxYEdge];
+            }
+            break;
+        default:
+            break;
+    }
 }
 
 @end
